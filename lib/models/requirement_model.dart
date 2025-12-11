@@ -1,13 +1,12 @@
+import 'package:intl/intl.dart';
+
 class RequirementModel {
   final int id;
   final String title;
   final String description;
   final double amount;
   final DateTime deadline;
-  final int totalUsers;
-  final int paid;
-  final int unpaid;
-  final String? status;
+  final String? status; // From API: "paid" or "unpaid"
   final DateTime? paidAt;
   final double? amountPaid;
 
@@ -17,9 +16,6 @@ class RequirementModel {
     required this.description,
     required this.amount,
     required this.deadline,
-    required this.totalUsers,
-    required this.paid,
-    required this.unpaid,
     this.status,
     this.paidAt,
     this.amountPaid,
@@ -30,41 +26,53 @@ class RequirementModel {
       id: json['id'] ?? 0,
       title: json['title'] ?? '',
       description: json['description'] ?? '',
-      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
-      deadline: json['deadline'] != null ? DateTime.parse(json['deadline'].toString()) : DateTime.now(),
-      totalUsers: json['total_users'] ?? 0,
-      paid: json['paid'] ?? 0,
-      unpaid: json['unpaid'] ?? 0,
-      status: json['status'],
-      paidAt: json['paid_at'] != null ? DateTime.parse(json['paid_at'].toString()) : null,
-      amountPaid: (json['amount_paid'] as num?)?.toDouble(),
+      amount: double.tryParse(json['amount']?.toString() ?? '0') ?? 0.0,
+      deadline: json['deadline'] != null 
+          ? DateTime.parse(json['deadline'].toString()) 
+          : DateTime.now().add(const Duration(days: 30)), // Default to 30 days from now
+      status: json['status']?.toString(),
+      paidAt: json['paid_at'] != null 
+          ? DateTime.tryParse(json['paid_at'].toString()) 
+          : null,
+      amountPaid: json['amount_paid'] != null 
+          ? double.tryParse(json['amount_paid'].toString()) 
+          : null,
     );
   }
 
   String get formattedDeadline {
-    return '${deadline.day}/${deadline.month}/${deadline.year}';
+    return DateFormat('dd/MM/yyyy').format(deadline);
   }
 
   String get calculatedStatus {
-    if (status != null) return status!;
+    if (status != null) {
+      return status!; // Use API status if available
+    }
     
     final now = DateTime.now();
-    if (paidAt != null) return 'Paid';
+    if (paidAt != null || amountPaid != null) return 'Paid';
     if (deadline.isBefore(now)) return 'Overdue';
     return 'Pending';
   }
 
-  bool get isPaid => calculatedStatus == 'Paid';
-  bool get isOverdue => calculatedStatus == 'Overdue';
-  bool get isPending => calculatedStatus == 'Pending';
+  bool get isPaid {
+    final calculated = calculatedStatus.toLowerCase();
+    return calculated == 'paid' || 
+           (status?.toLowerCase() == 'paid') || 
+           paidAt != null || 
+           amountPaid != null;
+  }
+  
+  bool get isOverdue {
+    if (isPaid) return false;
+    final now = DateTime.now();
+    return deadline.isBefore(now);
+  }
+  
+  bool get isPending => !isPaid && !isOverdue;
   
   int get daysUntilDeadline {
     final now = DateTime.now();
     return deadline.difference(now).inDays;
-  }
-
-  double get paidPercentage {
-    if (totalUsers == 0) return 0.0;
-    return (paid / totalUsers) * 100;
   }
 }

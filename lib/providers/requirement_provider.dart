@@ -15,19 +15,19 @@ class RequirementProvider with ChangeNotifier {
       .where((req) => req.isPaid)
       .toList()
       .reversed
-      .toList(); // Most recent first
+      .toList();
 
   List<RequirementModel> get unpaidRequirements => _requirements
-      .where((req) => !req.isPaid)
+      .where((req) => !req.isPaid && !req.isOverdue)
       .toList()
       .reversed
-      .toList(); // Most recent first
+      .toList();
 
   List<RequirementModel> get overdueRequirements => _requirements
       .where((req) => req.isOverdue)
       .toList()
       .reversed
-      .toList(); // Most recent first
+      .toList();
 
   double get totalAmount => _requirements
       .fold(0.0, (sum, req) => sum + req.amount);
@@ -41,21 +41,25 @@ class RequirementProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    final result = await ApiService.getMemberRequirements(token);
+    try {
+      final result = await ApiService.getMemberRequirements(token);
 
-    _isLoading = false;
-
-    if (result['success'] == true) {
-      final data = result['data'] as Map<String, dynamic>;
-      final requirementsList = data['requirements'] as List? ?? [];
-      _requirements = requirementsList
-          .map((item) => RequirementModel.fromJson(item))
-          .toList();
-      _error = null;
-    } else {
-      _error = result['message'];
+      if (result['success'] == true) {
+        final data = result['data'] as Map<String, dynamic>;
+        final requirementsList = data['requirements'] as List? ?? [];
+        _requirements = requirementsList
+            .map((item) => RequirementModel.fromJson(item))
+            .toList();
+        _error = null;
+      } else {
+        _error = result['message'];
+      }
+    } catch (e) {
+      _error = 'Failed to load requirements: $e';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   void clearError() {
