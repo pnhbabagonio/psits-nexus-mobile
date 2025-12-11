@@ -19,7 +19,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   final FocusNode _focusNode = FocusNode();
 
   // N8N Webhook URL
-  static const String _webhookUrl = 'https://mariaclara1886.app.n8n.cloud/webhook/psits-chatbot';
+  static const String _webhookUrl =
+      'https://mariaclara1886.app.n8n.cloud/webhook/psits-chatbot';
 
   @override
   void initState() {
@@ -39,22 +40,18 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   void _addBotMessage(String text) {
     setState(() {
-      _messages.add(ChatMessage(
-        text: text,
-        isUser: false,
-        timestamp: DateTime.now(),
-      ));
+      _messages.add(
+        ChatMessage(text: text, isUser: false, timestamp: DateTime.now()),
+      );
     });
     _scrollToBottom();
   }
 
   void _addUserMessage(String text) {
     setState(() {
-      _messages.add(ChatMessage(
-        text: text,
-        isUser: true,
-        timestamp: DateTime.now(),
-      ));
+      _messages.add(
+        ChatMessage(text: text, isUser: true, timestamp: DateTime.now()),
+      );
     });
     _scrollToBottom();
   }
@@ -76,31 +73,40 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
     _addUserMessage(message);
     _textController.clear();
-    
+
     setState(() => _isLoading = true);
 
     try {
+      print('🔵 Sending to: $_webhookUrl');
+      print('📤 Message: $message');
+
       final response = await http.post(
         Uri.parse(_webhookUrl),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'message': message,
-        }),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'message': message}),
       );
 
+      print('📥 Status Code: ${response.statusCode}');
+      print('📥 Raw Response: ${response.body}');
+
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final botResponse = data['response'] ?? 'I apologize, but I couldn\'t process your request.';
-        _addBotMessage(botResponse);
+        String? botResponse = await _extractBotResponse(response);
+
+        if (botResponse != null && botResponse.isNotEmpty) {
+          _addBotMessage(botResponse);
+        } else {
+          _addBotMessage(
+            'I apologize, but I couldn\'t find a valid response in the data.',
+          );
+        }
       } else {
         _addBotMessage(
-          'I\'m having trouble connecting right now. '
+          'I\'m having trouble connecting right now (Status: ${response.statusCode}). '
           'Please try again in a moment or contact the PSITS office directly.',
         );
       }
     } catch (e) {
+      print('❌ Exception: $e');
       _addBotMessage(
         'Oops! Something went wrong. Please check your internet connection and try again.\n\n'
         'Error: ${e.toString()}',
@@ -108,6 +114,87 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  Future<String?> _extractBotResponse(http.Response response) async {
+    try {
+      // First, try to parse as JSON
+      dynamic data;
+      try {
+        data = jsonDecode(response.body);
+      } catch (e) {
+        // If JSON parsing fails, try as plain text
+        print('⚠️ Response is not JSON, trying as plain text');
+        final text = response.body.trim();
+        return text.isNotEmpty ? text : null;
+      }
+
+      // Check if data is a string
+      if (data is String && data.trim().isNotEmpty) {
+        return data.trim();
+      }
+
+      // Check if data is an object
+      if (data is Map<String, dynamic>) {
+        // Prefer common fields (same as Vue.js logic)
+        final candidates = [
+          data['response'],
+          data['text'],
+          data['message'],
+          data['output'],
+          data['answer'],
+        ];
+
+        for (var candidate in candidates) {
+          if (candidate is String && candidate.trim().isNotEmpty) {
+            print('✅ Found response in candidate field: $candidate');
+            return candidate.trim();
+          }
+        }
+
+        // If nothing from common fields, search object values for first non-empty string
+        // (Same as Vue.js Object.values() search)
+        final allValues = _extractAllStringValues(data);
+        if (allValues.isNotEmpty) {
+          print('✅ Found response in extracted values: ${allValues.first}');
+          return allValues.first;
+        }
+      }
+
+      return null;
+    } catch (e) {
+      print('❌ Error extracting bot response: $e');
+      return null;
+    }
+  }
+
+  // Helper function to deeply extract all string values from a JSON object
+  List<String> _extractAllStringValues(dynamic data) {
+    final List<String> results = [];
+
+    void extract(dynamic item) {
+      if (item is String && item.trim().isNotEmpty) {
+        final trimmed = item.trim();
+        // Skip empty objects/arrays like Vue.js does
+        if (trimmed != '{}' && trimmed != '[]') {
+          results.add(trimmed);
+        }
+      } else if (item is Map) {
+        item.values.forEach(extract);
+      } else if (item is List) {
+        item.forEach(extract);
+      } else if (item != null) {
+        // For other non-null types, convert to string like Vue.js does
+        final str = item.toString();
+        final trimmed = str.trim();
+        if (trimmed.isNotEmpty && trimmed != '{}' && trimmed != '[]') {
+          results.add(trimmed);
+        }
+      }
+    }
+
+    extract(data);
+    return results;
   }
 
   void _handleSubmitted(String text) {
@@ -130,10 +217,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               children: [
                 const Text(
                   'Quick Questions',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
                 Wrap(
@@ -143,7 +227,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     _buildQuickQuestionChip('Who are the current officers?'),
                     _buildQuickQuestionChip('What are the upcoming events?'),
                     _buildQuickQuestionChip('How do I join PSITS?'),
-                    _buildQuickQuestionChip('What are the membership benefits?'),
+                    _buildQuickQuestionChip(
+                      'What are the membership benefits?',
+                    ),
                     _buildQuickQuestionChip('Where is the PSITS office?'),
                     _buildQuickQuestionChip('How much is the membership fee?'),
                     _buildQuickQuestionChip('Can non-members join events?'),
@@ -175,17 +261,13 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       child: Chip(
         label: Text(question),
         backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-        labelStyle: TextStyle(
-          color: AppTheme.primaryColor,
-          fontSize: 12,
-        ),
+        labelStyle: TextStyle(color: AppTheme.primaryColor, fontSize: 12),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
     final bottomSafeArea = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
@@ -269,7 +351,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
             if (_isLoading)
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
                 color: Colors.grey[50],
                 child: Row(
                   children: [
@@ -278,7 +363,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                       height: 24,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppTheme.primaryColor,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -303,7 +390,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 left: 8,
                 right: 8,
                 top: 8,
-                bottom: 8 + bottomSafeArea, // Add safe area padding at the bottom
+                bottom:
+                    8 + bottomSafeArea, // Add safe area padding at the bottom
               ),
               child: Row(
                 children: [
@@ -384,8 +472,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  message.isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: message.isUser
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -414,10 +503,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 const SizedBox(height: 4),
                 Text(
                   DateFormat('hh:mm a').format(message.timestamp),
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -428,11 +514,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               child: const CircleAvatar(
                 radius: 16,
                 backgroundColor: Colors.grey,
-                child: Icon(
-                  Icons.person,
-                  size: 16,
-                  color: Colors.white,
-                ),
+                child: Icon(Icons.person, size: 16, color: Colors.white),
               ),
             ),
         ],

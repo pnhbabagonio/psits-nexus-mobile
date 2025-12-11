@@ -108,18 +108,18 @@ class _MainScreenState extends State<MainScreen> {
         ),
         actions: [
           // Changed from notifications to chatbot
-          IconButton(
-            icon: const Icon(Icons.smart_toy_outlined), // Robot icon
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ChatbotScreen(),
-                ),
-              );
-            },
-            tooltip: 'PSITS Assistant',
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.smart_toy_outlined), // Robot icon
+          //   onPressed: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //         builder: (context) => const ChatbotScreen(),
+          //       ),
+          //     );
+          //   },
+          //   tooltip: 'PSITS Assistant',
+          // ),
         ],
       ),
       body: IndexedStack(
