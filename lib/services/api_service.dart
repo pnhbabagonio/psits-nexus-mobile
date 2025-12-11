@@ -295,5 +295,30 @@ static Future<Map<String, dynamic>> checkEventRegistration(String token, int eve
 static Future<Map<String, dynamic>> getJoinedEvents(String token) async {
   return await _makeRequest('GET', '/member/joined-events', token: token);
 }
+
+// Support Tickets Endpoints
+static Future<Map<String, dynamic>> createSupportTicket({
+  required String token,
+  required String subject,
+  required String message,
+  required String category,
+  required String priority,
+}) async {
+  return await _makeRequest('POST', '/support-tickets', token: token, body: {
+    'subject': subject,
+    'message': message,
+    'category': category,
+    'priority': priority,
+  });
+}
+
+static Future<Map<String, dynamic>> getSupportTickets(String token) async {
+  return await _makeRequest('GET', '/support-tickets', token: token);
+}
+
+static Future<Map<String, dynamic>> getSupportTicket(String token, int ticketId) async {
+  return await _makeRequest('GET', '/support-tickets/$ticketId', token: token);
+}
+
 }
 

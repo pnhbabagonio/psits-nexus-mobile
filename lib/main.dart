@@ -10,13 +10,16 @@ import 'package:psits_nexus_mobile/screens/login_screen.dart';
 import 'package:psits_nexus_mobile/screens/main_screen.dart';
 import 'package:psits_nexus_mobile/theme/app_theme.dart';
 import 'package:psits_nexus_mobile/services/api_service.dart';
+import 'package:psits_nexus_mobile/providers/support_ticket_provider.dart';
+import 'package:psits_nexus_mobile/screens/chatbot_screen.dart';
+import 'package:psits_nexus_mobile/providers/chatbot_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize API service from shared preferences
   await ApiService.initialize();
-  
+
   runApp(const MyApp());
 }
 
@@ -32,6 +35,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => EventProvider()),
         ChangeNotifierProvider(create: (_) => PaymentProvider()),
         ChangeNotifierProvider(create: (_) => RequirementProvider()),
+        ChangeNotifierProvider(create: (_) => SupportTicketProvider()),
+        // Add to your providers list in main.dart
+        ChangeNotifierProvider(create: (_) => ChatbotProvider()),
       ],
       child: MaterialApp(
         title: 'PSITS-NEXUS Member',
@@ -44,6 +50,7 @@ class MyApp extends StatelessWidget {
           '/': (context) => const SplashScreen(),
           '/login': (context) => const LoginScreen(),
           '/main': (context) => const MainScreen(),
+          '/chatbot': (context) => const ChatbotScreen(),
         },
       ),
     );

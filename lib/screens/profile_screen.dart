@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:psits_nexus_mobile/providers/auth_provider.dart';
 import 'package:psits_nexus_mobile/providers/member_provider.dart';
 import 'package:psits_nexus_mobile/theme/app_theme.dart';
+import 'package:psits_nexus_mobile/screens/settings_screen.dart';
+import 'package:psits_nexus_mobile/screens/help_and_support_screen.dart';
+import 'package:psits_nexus_mobile/screens/privacy_policy_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -198,41 +201,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Card(
                       child: Column(
                         children: [
-                          ListTile(
-                            leading: Icon(
-                              Icons.settings_outlined,
-                              color: AppTheme.onSurface,
-                            ),
-                            title: const Text('Settings'),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () {
-                              // TODO: Navigate to settings
-                            },
-                          ),
-                          const Divider(height: 0),
-                          ListTile(
-                            leading: Icon(
-                              Icons.help_outline,
-                              color: AppTheme.onSurface,
-                            ),
-                            title: const Text('Help & Support'),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () {
-                              // TODO: Navigate to help
-                            },
-                          ),
-                          const Divider(height: 0),
-                          ListTile(
-                            leading: Icon(
-                              Icons.privacy_tip_outlined,
-                              color: AppTheme.onSurface,
-                            ),
-                            title: const Text('Privacy Policy'),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () {
-                              // TODO: Show privacy policy
-                            },
-                          ),
+                ListTile(
+                  leading: Icon(
+                    Icons.settings_outlined,
+                    color: AppTheme.onSurface,
+                  ),
+                  title: const Text('Settings'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
+
+                ListTile(
+                  leading: Icon(
+                    Icons.help_outline,
+                    color: AppTheme.onSurface,
+                  ),
+                  title: const Text('Help & Support'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HelpAndSupportScreen(),
+                      ),
+                    );
+                  },
+                ),
+
+                ListTile(
+                  leading: Icon(
+                    Icons.privacy_tip_outlined,
+                    color: AppTheme.onSurface,
+                  ),
+                  title: const Text('Privacy Policy'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PrivacyPolicyScreen(),
+                      ),
+                    );
+                  },
+                ),
                           const Divider(height: 0),
                           ListTile(
                             leading: Icon(

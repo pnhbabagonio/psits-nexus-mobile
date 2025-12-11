@@ -6,6 +6,7 @@ import 'package:psits_nexus_mobile/screens/profile_screen.dart';
 import 'package:psits_nexus_mobile/screens/payments_screen.dart';
 import 'package:psits_nexus_mobile/screens/requirements_screen.dart';
 import 'package:psits_nexus_mobile/screens/events_screen.dart';
+import 'package:psits_nexus_mobile/screens/chatbot_screen.dart'; // Add this import
 import 'package:psits_nexus_mobile/theme/app_theme.dart';
 
 class MainScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  bool _showChatButton = true;
 
   static final List<Widget> _screens = [
     const DashboardScreen(),
@@ -54,6 +56,14 @@ class _MainScreenState extends State<MainScreen> {
     ),
   ];
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      // Hide chat button on chatbot screen
+      _showChatButton = index != 4; // Assuming chatbot is at index 4 if we add it
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -82,7 +92,7 @@ class _MainScreenState extends State<MainScreen> {
                 margin: const EdgeInsets.only(left: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppTheme.secondaryColor.withValues(alpha: 0.1),
+                  color: AppTheme.secondaryColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -97,11 +107,18 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
         actions: [
+          // Changed from notifications to chatbot
           IconButton(
-            icon: const Icon(Icons.notifications_outlined),
+            icon: const Icon(Icons.smart_toy_outlined), // Robot icon
             onPressed: () {
-              // TODO: Add notifications
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ChatbotScreen(),
+                ),
+              );
             },
+            tooltip: 'PSITS Assistant',
           ),
         ],
       ),
@@ -111,13 +128,30 @@ class _MainScreenState extends State<MainScreen> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
+        onDestinationSelected: _onItemTapped,
         destinations: _navDestinations,
       ),
+      // Floating chat button
+      floatingActionButton: _showChatButton
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ChatbotScreen(),
+                  ),
+                );
+              },
+              backgroundColor: AppTheme.primaryColor,
+              foregroundColor: Colors.white,
+              child: const Icon(Icons.smart_toy),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              tooltip: 'Chat with PSITS Assistant',
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }
