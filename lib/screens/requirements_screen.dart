@@ -149,7 +149,7 @@ class _RequirementsScreenState extends State<RequirementsScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '\$${totalAmount.toStringAsFixed(2)}',
+                            'P${totalAmount.toStringAsFixed(2)}',
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -158,7 +158,7 @@ class _RequirementsScreenState extends State<RequirementsScreen> {
                           ),
                           if (listType == 'all' && paidAmount > 0)
                             Text(
-                              'Paid: \$${paidAmount.toStringAsFixed(2)}',
+                              'Paid: P${paidAmount.toStringAsFixed(2)}',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: AppTheme.successColor,
@@ -322,7 +322,7 @@ class _RequirementsScreenState extends State<RequirementsScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '\$${requirement.amount.toStringAsFixed(2)}',
+                        'P${requirement.amount.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -361,7 +361,7 @@ class _RequirementsScreenState extends State<RequirementsScreen> {
                 _buildDetailRow(
                   icon: Icons.attach_money,
                   label: 'Amount Paid',
-                  value: '\$${requirement.amountPaid!.toStringAsFixed(2)}',
+                  value: 'P${requirement.amountPaid!.toStringAsFixed(2)}',
                   valueColor: AppTheme.successColor,
                 ),
               
