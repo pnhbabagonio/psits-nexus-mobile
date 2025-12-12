@@ -204,49 +204,64 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   void _showQuickQuestions() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return SafeArea(
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Quick Questions',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+        return DraggableScrollableSheet(
+          expand: false,
+          builder: (context, scrollController) {
+            return SingleChildScrollView(
+              controller: scrollController,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildQuickQuestionChip('Who are the current officers?'),
-                    _buildQuickQuestionChip('What are the upcoming events?'),
-                    _buildQuickQuestionChip('How do I join PSITS?'),
-                    _buildQuickQuestionChip(
-                      'What are the membership benefits?',
+                    const Text(
+                      'Quick Questions',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    _buildQuickQuestionChip('Where is the PSITS office?'),
-                    _buildQuickQuestionChip('How much is the membership fee?'),
-                    _buildQuickQuestionChip('Can non-members join events?'),
-                    _buildQuickQuestionChip('How to contact the officers?'),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildQuickQuestionChip(
+                          'Who are the current officers?',
+                        ),
+                        _buildQuickQuestionChip(
+                          'What are the upcoming events?',
+                        ),
+                        _buildQuickQuestionChip('How do I join PSITS?'),
+                        _buildQuickQuestionChip(
+                          'What are the membership benefits?',
+                        ),
+                        _buildQuickQuestionChip('Where is the PSITS office?'),
+                        _buildQuickQuestionChip(
+                          'How much is the membership fee?',
+                        ),
+                        _buildQuickQuestionChip('Can non-members join events?'),
+                        _buildQuickQuestionChip('How to contact the officers?'),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Close'),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Close'),
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
